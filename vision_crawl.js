@@ -1,13 +1,105 @@
+import dotenv from 'dotenv';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import OpenAI from 'openai';
 import readline from 'readline';
 import fs from 'fs';
+import { EventEmitter } from 'events';
+import WebSocket, { WebSocketServer } from 'ws';
 
+const timeout = 8000;
+
+dotenv.config({ path: './.env' });
 puppeteer.use(StealthPlugin());
 
 const openai = new OpenAI();
-const timeout = 8000;
+const messageEmitter = new EventEmitter();
+
+// Create a WebSocket server
+const wss = new WebSocketServer({ port: 8080 });
+
+let currentClient = null; // Keep track of the current WebSocket client
+
+wss.on('connection', (ws) => {
+  console.log(`Client connected`);
+  currentClient = ws;
+
+  ws.on('message', (msg) => {
+    console.log(`WebSocket Message Received: ${msg}`);
+    try {
+      const messageData = JSON.parse(msg);
+      if (messageData.command === 'input') {
+        // Emit the data field of the message
+        messageEmitter.emit('newMessage', messageData.data);
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    if (currentClient === ws) {
+      currentClient = null;
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket Error:', error);
+  });
+});
+
+async function input(text) {
+  let resolvePrompt;
+
+  const promiseCLIInput = () => new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question(text, (prompt) => {
+      rl.close();
+      resolve(prompt);
+    });
+  });
+
+  const promiseWebSocketInput = () => new Promise((resolve) => {
+    resolvePrompt = resolve;
+    messageEmitter.on('newMessage', (data) => {
+      resolve(data);
+    });
+  });
+
+  while (true) {
+    let thePrompt = await Promise.race([promiseCLIInput(), promiseWebSocketInput()]);
+
+    if (thePrompt) {
+      // Send the response to the client
+      if (currentClient) {
+        currentClient.send(JSON.stringify({ type: 'output', message: thePrompt }));
+      }
+
+
+      // Remove WebSocket listener to prevent it from firing multiple times
+      messageEmitter.off('newMessage', resolvePrompt);
+      return thePrompt;
+    }
+  }
+}
+
+async function main() {
+  while (true) {
+    try {
+      const prompt = await input('Enter input: ');
+      console.log(`Received input: ${prompt}`);
+      // Process the input...
+    } catch (error) {
+      console.error('Error in main loop:', error);
+    }
+  }
+}
+
 
 async function image_to_base64(image_file) {
     return await new Promise((resolve, reject) => {
@@ -25,26 +117,6 @@ async function image_to_base64(image_file) {
     });
 }
 
-async function input( text ) {
-    let the_prompt;
-
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    await (async () => {
-        return new Promise( resolve => {
-            rl.question( text, (prompt) => {
-                the_prompt = prompt;
-                rl.close();
-                resolve();
-            } );
-        } );
-    })();
-
-    return the_prompt;
-}
 
 async function sleep( milliseconds ) {
     return await new Promise((r, _) => {
@@ -165,7 +237,7 @@ In the beginning, go to a direct URL that you think might contain the answer to 
 
     console.log("GPT: How can I assist you today?")
     const prompt = await input("You: ");
-    console.log();
+    //console.log();
 
     messages.push({
         "role": "user",
@@ -177,7 +249,11 @@ In the beginning, go to a direct URL that you think might contain the answer to 
 
     while( true ) {
         if( url ) {
+            const crawlingMessage = "Crawling " + url;
             console.log("Crawling " + url);
+            if (currentClient)  {
+                currentClient.send(JSON.stringify({ type: 'status', message: crawlingMessage }));
+}
             await page.goto( url, {
                 waitUntil: "domcontentloaded",
             } );
@@ -236,7 +312,13 @@ In the beginning, go to a direct URL that you think might contain the answer to 
         });
 
         console.log( "GPT: " + message_text );
-
+        const messageText = "GPT: " + message_text;
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
+        }
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
+        }
         if( message_text.indexOf('{"click": "') !== -1 ) {
             let parts = message_text.split('{"click": "');
             parts = parts[1].split('"}');
@@ -245,8 +327,12 @@ In the beginning, go to a direct URL that you think might contain the answer to 
             console.log("Clicking on " + link_text)
 
             try {
-                const elements = await page.$$('[gpt-link-text]');
-
+                const elements = await page.waitForSelector('[gpt-link-text]');
+                if (element) {
+                  await element.click();
+                  } else {
+                     throw new Error("Couldn't find link");
+}
                 let partial;
                 let exact;
 
@@ -302,7 +388,7 @@ In the beginning, go to a direct URL that you think might contain the answer to 
         }
 
         const prompt = await input("You: ");
-        console.log();
+        //console.log();
 
         messages.push({
             "role": "user",
