@@ -6,8 +6,6 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config()
 
-console.log(process.env.OPENAI_API_KEY);
-
 import OpenAI from "openai";
 
 const openai = new OpenAI();
@@ -136,60 +134,30 @@ async function waitForEvent(page, event) {
     }, event)
 }
 
-async function clickOnElement(elem, x = null, y = null) {
-    const rect = await page.evaluate(el => {
-      const { top, left, width, height } = el.getBoundingClientRect();
-      return { top, left, width, height };
-    }, elem);
-
-    // Use given position or default to center
-    const _x = x !== null ? x : rect.width / 2;
-    const _y = y !== null ? y : rect.height / 2;
-
-    await page.mouse.click(rect.left + _x, rect.top + _y);
-  }
-
-async function clickAroundElement(page, elem, attempts = 5) {
-    const rect = await page.evaluate(el => {
-        const {top, left, width, height} = el.getBoundingClientRect();
-        return {top, left, width, height};
-    }, elem);
-
-    for (let i = 0; i < attempts; i++) {
-        // Calculate a small random offset for each click to simulate clicking around the element
-        const offsetX = (Math.random() - 0.5) * 20; // Adjusts the range of -10 to +10 pixels
-        const offsetY = (Math.random() - 0.5) * 20; // Adjusts the range of -10 to +10 pixels
-
-        const clickX = rect.left + rect.width / 2 + offsetX;
-        const clickY = rect.top + rect.height / 2 + offsetY;
-
-        await page.mouse.click(clickX, clickY);
-
-        // Optionally, wait a bit between clicks to allow the page to respond
-        await page.waitForTimeout(100); // Adjust the delay as needed
-    }
-}
-
-
 (async () => {
     console.log( "###########################################" );
-    console.log( "# Forked from Unconventional Coding #" );
-
-    console.log( "# Improvements by AISORTED #" );
+    console.log( "# Forked from Unconventional Coding       #" );
+    console.log( "#   websockets & browse fix by AISORTED   #" );
     console.log( "###########################################\n" );
 
     const browser = await puppeteer.launch( {
         headless: false,
+        //devtools:true,
     } );
 
     const page = await browser.newPage();
 
+      // Set the user agent
+      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36');
 
-    page.on('console', msg => {
-        if (msg.type() === 'error') { // Filter for console errors
-            console.log('CONSOLE ERROR:', msg.text());
-        }
-    });
+
+      //page.on('console', message => console.log(`Page log: ${message.text()}`));
+      //page.on('pageerror', error => console.log(`Page error: ${error.message}`));
+      //page.on('requestfailed', request => console.log(`Request failed: ${request.url()}`));
+
+
+      // Navigate to a URL
+      await page.goto('https://duckduckgo.com');
 
     await page.setViewport( {
         width: 1200,
@@ -338,6 +306,7 @@ In the beginning, go to a direct URL that you think might contain the answer to 
                             await page.waitForTimeout(1000);
                             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
                             await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+                            //break;
                         } else {
                             //console.log("No match found.");
                         }
