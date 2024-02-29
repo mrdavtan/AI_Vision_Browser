@@ -129,41 +129,6 @@ async function waitForEvent(page, event) {
     }, event)
 }
 
-async function clickOnElement(elem, x = null, y = null) {
-    const rect = await page.evaluate(el => {
-      const { top, left, width, height } = el.getBoundingClientRect();
-      return { top, left, width, height };
-    }, elem);
-
-    // Use given position or default to center
-    const _x = x !== null ? x : rect.width / 2;
-    const _y = y !== null ? y : rect.height / 2;
-
-    await page.mouse.click(rect.left + _x, rect.top + _y);
-  }
-
-async function clickAroundElement(page, elem, attempts = 5) {
-    const rect = await page.evaluate(el => {
-        const {top, left, width, height} = el.getBoundingClientRect();
-        return {top, left, width, height};
-    }, elem);
-
-    for (let i = 0; i < attempts; i++) {
-        // Calculate a small random offset for each click to simulate clicking around the element
-        const offsetX = (Math.random() - 0.5) * 20; // Adjusts the range of -10 to +10 pixels
-        const offsetY = (Math.random() - 0.5) * 20; // Adjusts the range of -10 to +10 pixels
-
-        const clickX = rect.left + rect.width / 2 + offsetX;
-        const clickY = rect.top + rect.height / 2 + offsetY;
-
-        await page.mouse.click(clickX, clickY);
-
-        // Optionally, wait a bit between clicks to allow the page to respond
-        await page.waitForTimeout(100); // Adjust the delay as needed
-    }
-}
-
-
 (async () => {
     console.log( "###########################################" );
     console.log( "# GPT4V-Browsing by Unconventional Coding #" );
@@ -276,55 +241,24 @@ In the beginning, go to a direct URL that you think might contain the answer to 
             let parts = message_text.split('{"click": "');
             parts = parts[1].split('"}');
             const link_text = parts[0].replace(/[^a-zA-Z0-9 ]/g, '');
-            console.log("Unsanitized target: " + link_text)
+
+            console.log("Clicking on " + link_text)
+
             try {
                 const elements = await page.$$('[gpt-link-text]');
-                console.log(`Found ${elements.length} elements`);
-                if (elements.length === 0) {
-                    console.log('No elements found with the attribute "gpt-link-text".');
-                }
-                let clicked = false;
 
                 let partial;
                 let exact;
 
-                function sanitizeText(text) {
-                    // Example sanitization: Lowercase and remove non-alphanumeric characters (except spaces)
-                    return text.toLowerCase().replace(/[^a-z0-9\s]/gi, '');
-                }
+                for( const element of elements ) {
+                    const attributeValue = await element.getAttribute('gpt-link-text');
 
-                function extractFirstFiveWords(text) {
-                    const words = text.split(' ').filter(Boolean); // Split by space and remove any empty strings
-                    return words.slice(0, 5); // Return the first five words as an array
-                }
+                    if( attributeValue.includes( link_text ) ) {
+                        partial = element;
+                    }
 
-                function containsAllWords(baseText, targetWords) {
-                    const baseWordsSet = new Set(baseText.split(' ')); // Create a set of words from base text for efficient lookup
-                    return targetWords.every(word => baseWordsSet.has(word)); // Check if every target word is in the base words set
-                }
-
-                // Apply both sanitization and extraction to link_text
-                const link_text = parts[0]; // Assuming parts[0] contains the text to click
-                const sanitizedLinkText = sanitizeText(link_text);
-                const firstFiveWords = extractFirstFiveWords(sanitizedLinkText); // Extracts first five words after sanitization
-                console.log("######Sanitized clicking on first five words: " + firstFiveWords.join(' '));
-
-                for (const element of elements) {
-                    let attributeValue = await page.evaluate(el => el.getAttribute('gpt-link-text'), element);
-                    let sanitizedAttributeValue = sanitizeText(attributeValue); // Sanitize the attribute value
-
-                    console.log("The text being evaluated is: " + sanitizedAttributeValue);
-                    if (sanitizedAttributeValue) {
-                        if (containsAllWords(sanitizedAttributeValue, firstFiveWords)) { // Check if sanitized attribute value contains all first five words
-                            console.log("Match found. Attempting to click...");
-                            // Continue with the click logic here
-                            const box = await element.boundingBox();
-                            await page.waitForTimeout(2000);
-                            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-                            await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-                        } else {
-                            console.log("No match found.");
-                        }
+                    if( attributeValue === link_text ) {
+                        exact = element;
                     }
                 }
 
