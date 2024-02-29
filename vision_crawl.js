@@ -1,12 +1,19 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import OpenAI from 'openai';
 import readline from 'readline';
 import fs from 'fs';
 
-puppeteer.use(StealthPlugin());
+import dotenv from 'dotenv';
+dotenv.config()
+
+console.log(process.env.OPENAI_API_KEY);
+
+import OpenAI from "openai";
 
 const openai = new OpenAI();
+
+puppeteer.use(StealthPlugin());
+
 const timeout = 8000;
 
 async function image_to_base64(image_file) {
@@ -166,14 +173,23 @@ async function clickAroundElement(page, elem, attempts = 5) {
 
 (async () => {
     console.log( "###########################################" );
-    console.log( "# GPT4V-Browsing by Unconventional Coding #" );
+    console.log( "# Forked from Unconventional Coding #" );
+
+    console.log( "# Improvements by AISORTED #" );
     console.log( "###########################################\n" );
 
     const browser = await puppeteer.launch( {
-        headless: "new",
+        headless: false,
     } );
 
     const page = await browser.newPage();
+
+
+    page.on('console', msg => {
+        if (msg.type() === 'error') { // Filter for console errors
+            console.log('CONSOLE ERROR:', msg.text());
+        }
+    });
 
     await page.setViewport( {
         width: 1200,
@@ -307,33 +323,25 @@ In the beginning, go to a direct URL that you think might contain the answer to 
                 const link_text = parts[0]; // Assuming parts[0] contains the text to click
                 const sanitizedLinkText = sanitizeText(link_text);
                 const firstFiveWords = extractFirstFiveWords(sanitizedLinkText); // Extracts first five words after sanitization
-                console.log("######Sanitized clicking on first five words: " + firstFiveWords.join(' '));
+                //console.log("Searching for the first five words in page elements: " + firstFiveWords.join(' '));
 
                 for (const element of elements) {
                     let attributeValue = await page.evaluate(el => el.getAttribute('gpt-link-text'), element);
                     let sanitizedAttributeValue = sanitizeText(attributeValue); // Sanitize the attribute value
 
-                    console.log("The text being evaluated is: " + sanitizedAttributeValue);
+                    //console.log("Element: " + sanitizedAttributeValue);
                     if (sanitizedAttributeValue) {
                         if (containsAllWords(sanitizedAttributeValue, firstFiveWords)) { // Check if sanitized attribute value contains all first five words
                             console.log("Match found. Attempting to click...");
                             // Continue with the click logic here
                             const box = await element.boundingBox();
-                            await page.waitForTimeout(2000);
+                            await page.waitForTimeout(1000);
                             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
                             await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
                         } else {
-                            console.log("No match found.");
+                            //console.log("No match found.");
                         }
                     }
-                }
-
-                if( exact ) {
-                    await exact.click();
-                } else if( partial ) {
-                    await partial.click();
-                } else {
-                    throw new Error( "Can't find link" );
                 }
 
                 await Promise.race( [
