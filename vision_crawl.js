@@ -2,17 +2,138 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import readline from 'readline';
 import fs from 'fs';
-
 import dotenv from 'dotenv';
-dotenv.config()
-
 import OpenAI from "openai";
+import { EventEmitter } from 'events';
+import WebSocket, { WebSocketServer } from 'ws';
 
+dotenv.config()
 const openai = new OpenAI();
-
 puppeteer.use(StealthPlugin());
-
 const timeout = 8000;
+
+
+//websockets
+const messageEmitter = new EventEmitter();
+const wss = new WebSocketServer({ port: 8080 });
+
+let currentClient = null;
+
+wss.on('connection', (ws) => {
+  console.log(`Client connected`);
+  currentClient = ws;
+
+  ws.on('message', (msg) => {
+    console.log(`WebSocket Message Received: ${msg}`);
+
+    try {
+      const messageData = JSON.parse(msg);
+      if (messageData.command === 'input') {
+        // Emit the data field of the message
+        messageEmitter.emit('newMessage', messageData.data);
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    if (currentClient === ws) {
+      currentClient = null;
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket Error:', error);
+  });
+});
+
+
+async function input(text) {
+  let resolvePrompt;
+
+  const promiseCLIInput = () => new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question(text, (prompt) => {
+      rl.close();
+      resolve(prompt);
+    });
+  });
+
+  const promiseWebSocketInput = () => new Promise((resolve) => {
+    resolvePrompt = resolve;
+    messageEmitter.on('newMessage', (data) => {
+      resolve(data);
+    });
+  });
+
+  while (true) {
+    let thePrompt = await Promise.race([promiseCLIInput(), promiseWebSocketInput()]);
+
+    if (thePrompt) {
+      // Send the response to the client
+      if (currentClient) {
+        currentClient.send(JSON.stringify({ type: 'output', message: thePrompt }));
+
+        // Send a 'complete' message to indicate the client can send the next input
+        currentClient.send(JSON.stringify({ type: 'complete', message: 'Command processed. Ready for next input.' }));
+      }
+
+      // Remove WebSocket listener to prevent it from firing multiple times
+      messageEmitter.off('newMessage', resolvePrompt);
+      return thePrompt;
+    }
+  }
+}
+
+
+//async function input(text) {
+//  let resolvePrompt;
+//
+//  const promiseCLIInput = () => new Promise((resolve) => {
+//    const rl = readline.createInterface({
+//      input: process.stdin,
+//      output: process.stdout
+//    });
+//
+//    rl.question(text, (prompt) => {
+//      rl.close();
+//      resolve(prompt);
+//    });
+//  });
+//
+//  const promiseWebSocketInput = () => new Promise((resolve) => {
+//    resolvePrompt = resolve;
+//    messageEmitter.on('newMessage', (data) => {
+//      resolve(data);
+//    });
+//  });
+//
+//  while (true) {
+//    let thePrompt = await Promise.race([promiseCLIInput(), promiseWebSocketInput()]);
+//
+//    if (thePrompt) {
+//      // Send the response to the client
+//      if (currentClient) {
+//        currentClient.send(JSON.stringify({ type: 'output', message: thePrompt }));
+//      }
+//
+//
+//      // Remove WebSocket listener to prevent it from firing multiple times
+//      messageEmitter.off('newMessage', resolvePrompt);
+//      return thePrompt;
+//    }
+//  }
+//}
+//
+
+
+
 
 async function image_to_base64(image_file) {
     return await new Promise((resolve, reject) => {
@@ -30,26 +151,26 @@ async function image_to_base64(image_file) {
     });
 }
 
-async function input( text ) {
-    let the_prompt;
-
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    await (async () => {
-        return new Promise( resolve => {
-            rl.question( text, (prompt) => {
-                the_prompt = prompt;
-                rl.close();
-                resolve();
-            } );
-        } );
-    })();
-
-    return the_prompt;
-}
+//async function input( text ) {
+//    let the_prompt;
+//
+//    const rl = readline.createInterface({
+//      input: process.stdin,
+//      output: process.stdout
+//    });
+//
+//    await (async () => {
+//        return new Promise( resolve => {
+//            rl.question( text, (prompt) => {
+//                the_prompt = prompt;
+//                rl.close();
+//                resolve();
+//            } );
+//        } );
+//    })();
+//
+//    return the_prompt;
+//}
 
 async function sleep( milliseconds ) {
     return await new Promise((r, _) => {
