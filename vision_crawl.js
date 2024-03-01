@@ -91,50 +91,6 @@ async function input(text) {
   }
 }
 
-
-//async function input(text) {
-//  let resolvePrompt;
-//
-//  const promiseCLIInput = () => new Promise((resolve) => {
-//    const rl = readline.createInterface({
-//      input: process.stdin,
-//      output: process.stdout
-//    });
-//
-//    rl.question(text, (prompt) => {
-//      rl.close();
-//      resolve(prompt);
-//    });
-//  });
-//
-//  const promiseWebSocketInput = () => new Promise((resolve) => {
-//    resolvePrompt = resolve;
-//    messageEmitter.on('newMessage', (data) => {
-//      resolve(data);
-//    });
-//  });
-//
-//  while (true) {
-//    let thePrompt = await Promise.race([promiseCLIInput(), promiseWebSocketInput()]);
-//
-//    if (thePrompt) {
-//      // Send the response to the client
-//      if (currentClient) {
-//        currentClient.send(JSON.stringify({ type: 'output', message: thePrompt }));
-//      }
-//
-//
-//      // Remove WebSocket listener to prevent it from firing multiple times
-//      messageEmitter.off('newMessage', resolvePrompt);
-//      return thePrompt;
-//    }
-//  }
-//}
-//
-
-
-
-
 async function image_to_base64(image_file) {
     return await new Promise((resolve, reject) => {
         fs.readFile(image_file, (err, data) => {
@@ -318,6 +274,9 @@ In the beginning, go to a direct URL that you think might contain the answer to 
     while( true ) {
         if( url ) {
             console.log("Crawling " + url);
+
+
+
             await page.goto( url, {
                 waitUntil: "domcontentloaded",
             } );
@@ -375,7 +334,17 @@ In the beginning, go to a direct URL that you think might contain the answer to 
             "content": message_text,
         });
 
+
+
         console.log( "GPT: " + message_text );
+        const messageText = "GPT: " + message_text;
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
+        }
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
+        }
+
 
         if( message_text.indexOf('{"click": "') !== -1 ) {
             let parts = message_text.split('{"click": "');
@@ -384,9 +353,7 @@ In the beginning, go to a direct URL that you think might contain the answer to 
             console.log("Unsanitized target: " + link_text)
             try {
                 const elements = await page.$$('[gpt-link-text]');
-                console.log(`Found ${elements.length} elements`);
                 if (elements.length === 0) {
-                    console.log('No elements found with the attribute "gpt-link-text".');
                 }
                 let clicked = false;
 
@@ -447,6 +414,7 @@ In the beginning, go to a direct URL that you think might contain the answer to 
                 } );
 
                 screenshot_taken = true;
+
             } catch( error ) {
                 console.log( "ERROR: Clicking failed" );
 
