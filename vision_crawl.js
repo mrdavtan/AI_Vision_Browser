@@ -255,7 +255,9 @@ You can click links on the website by referencing the text inside of the link/bu
 
 Once you are on a URL and you have found the answer to the user's question, you can answer with a regular message.
 
-In the beginning, go to a direct URL that you think might contain the answer to the user's question. Prefer to go directly to sub-urls like 'https://google.com/search?q=search' if applicable. Prefer to use Google for simple queries. If the user provides a direct URL, go to that one.`,
+In the beginning, go to a direct URL that you think might contain the answer to the user's question. Prefer to go directly to sub-urls like 'https://google.com/search?q=search' if applicable. Prefer to use Google for simple queries. If the user provides a direct URL, go to that one.
+
+Please create a list of links for more info`,
         }
     ];
 
