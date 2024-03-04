@@ -458,10 +458,7 @@ async function captureEntireWebsite(page, messages) {
                 ...messages,
                 {
                     "role": "system",
-                    "content": {
-                        "type": "image_url",
-                        "image_url": base64Image
-                    }
+                    "content": base64Image
                 }
             ],
         });
