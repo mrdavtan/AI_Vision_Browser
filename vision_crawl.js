@@ -232,7 +232,7 @@ async function waitForEvent(page, event) {
 
 
       // Navigate to a URL
-      await page.goto('https://duckduckgo.com');
+      await page.goto('https://news.google.com/search?q=AI&hl=en-US&gl=US&ceid=US:en');
 
     await page.setViewport( {
         width: 1200,
