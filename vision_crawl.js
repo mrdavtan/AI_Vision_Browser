@@ -289,7 +289,7 @@ Please create a list of links for more info`,
 
             await highlight_links( page );
 
-            await captureEntireWebsite(page);
+            await captureEntireWebsite(page, messages);
 
             screenshot_taken = true;
             url = null;
@@ -438,7 +438,7 @@ Please create a list of links for more info`,
         });
     }
 })();
-async function captureEntireWebsite(page) {
+async function captureEntireWebsite(page, messages) {
     while (await scrollOnePageDown(page)) {
         // Add a delay to give the page some time to load the new content
         await new Promise(resolve => setTimeout(resolve, 1000));
