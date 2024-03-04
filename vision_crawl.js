@@ -290,14 +290,7 @@ Please create a list of links for more info`,
 
             await highlight_links( page );
 
-            if (await hasScrollableContent(page)) {
-                await scrollOnePageDown(page);
-                await page.screenshot( {
-                    path: "screenshot.jpg",
-                    quality: 100,
-                    fullPage: true
-                } );
-            }
+            await captureEntireWebsite(page);
 
             screenshot_taken = true;
             url = null;
