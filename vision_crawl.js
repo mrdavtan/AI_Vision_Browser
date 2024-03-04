@@ -132,7 +132,9 @@ async function scrollOnePageDown(page) {
                 resolve();
             });
         });
+        return true;
     }
+    return false;
 }
 
 async function highlight_links( page ) {
@@ -444,3 +446,14 @@ Please create a list of links for more info`,
         });
     }
 })();
+async function captureEntireWebsite(page) {
+    let screenshotIndex = 0;
+    while (await scrollOnePageDown(page)) {
+        await page.screenshot({
+            path: `screenshot_${screenshotIndex}.jpg`,
+            quality: 100,
+            fullPage: true
+        });
+        screenshotIndex++;
+    }
+}
