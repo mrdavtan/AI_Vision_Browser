@@ -117,14 +117,22 @@ async function sleep( milliseconds ) {
     });
 }
 
-async function scrollOnePageDown(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve, reject) => {
-            var viewportHeight = window.innerHeight;
-            window.scrollBy(0, viewportHeight);
-            resolve();
-        });
+async function hasScrollableContent(page) {
+    return await page.evaluate(() => {
+        return document.documentElement.scrollHeight > window.innerHeight;
     });
+}
+
+async function scrollOnePageDown(page) {
+    if (await hasScrollableContent(page)) {
+        await page.evaluate(async () => {
+            await new Promise((resolve, reject) => {
+                var viewportHeight = window.innerHeight;
+                window.scrollBy(0, viewportHeight);
+                resolve();
+            });
+        });
+    }
 }
 
 async function highlight_links( page ) {
@@ -280,12 +288,14 @@ Please create a list of links for more info`,
 
             await highlight_links( page );
 
-            await scrollOnePageDown(page);
-            await page.screenshot( {
-                path: "screenshot.jpg",
-                quality: 100,
-                fullPage: true
-            } );
+            if (await hasScrollableContent(page)) {
+                await scrollOnePageDown(page);
+                await page.screenshot( {
+                    path: "screenshot.jpg",
+                    quality: 100,
+                    fullPage: true
+                } );
+            }
 
             screenshot_taken = true;
             url = null;
