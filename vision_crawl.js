@@ -308,7 +308,7 @@ Please create a list of links for more info`,
                  {
                      "type": "text",
                      "text": "Here's the screenshot of the website you are on right now. You can click on links with {\"click\": \"Link\"}"
- text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond
+ text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond normally.\","
  normally.",
                  }
              ]
