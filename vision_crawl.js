@@ -315,12 +315,14 @@ Please create a list of links for more info`,
          screenshot_taken = false;
      }
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4-vision-preview",
-            max_tokens: 1024,
-            //seed: 665234,
-            messages: messages,
-        });
+        setTimeout(async () => {
+            const response = await openai.chat.completions.create({
+                model: "gpt-4-vision-preview",
+                max_tokens: 1024,
+                //seed: 665234,
+                messages: messages,
+            });
+        }, 60000); // Delay of 60 seconds
 
         const message = response.choices[0].message;
         const message_text = message.content;
