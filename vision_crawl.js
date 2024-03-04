@@ -448,11 +448,27 @@ async function captureEntireWebsite(page, messages) {
             quality: 100,
             fullPage: true
         });
-        // Ensure the OpenAI response is awaited before proceeding
-        await openai.chat.completions.create({
+        // Convert the screenshot to base64 format
+        const base64Image = await image_to_base64();
+        // Send the base64 image to the chatgpt4 model
+        const response = await openai.chat.completions.create({
             model: "gpt-4-vision-preview",
             max_tokens: 1024,
-            messages: messages,
+            messages: [
+                ...messages,
+                {
+                    "role": "system",
+                    "content": {
+                        "type": "image_url",
+                        "image_url": base64Image
+                    }
+                }
+            ],
+        });
+        // Add the response to the messages array
+        messages.push({
+            "role": "assistant",
+            "content": response.choices[0].message.content
         });
         screenshotCount++;
     }
