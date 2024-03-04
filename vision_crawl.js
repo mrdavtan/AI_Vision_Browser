@@ -444,10 +444,10 @@ async function captureEntireWebsite(page, messages) {
         // Add a delay to give the page some time to load the new content
         await new Promise(resolve => setTimeout(resolve, 1000));
         await page.screenshot({
-            path: 'screenshot.jpg',
+            path: './screenshot.jpg',
             quality: 100,
             fullPage: true
-        });
+        }).catch(error => console.error('Error saving screenshot:', error));
         // Convert the screenshot to base64 format
         const base64Image = await image_to_base64();
         // Send the base64 image to the chatgpt4 model
