@@ -115,21 +115,12 @@ async function sleep( milliseconds ) {
     });
 }
 
-async function scrollPageToBottom(page) {
+async function scrollOnePageDown(page) {
     await page.evaluate(async () => {
         await new Promise((resolve, reject) => {
-            var totalHeight = 0;
-            var distance = 100;
-            var timer = setInterval(() => {
-                var scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-
-                if (totalHeight >= scrollHeight){
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 100);
+            var viewportHeight = window.innerHeight;
+            window.scrollBy(0, viewportHeight);
+            resolve();
         });
     });
 }
@@ -287,7 +278,7 @@ Please create a list of links for more info`,
 
             await highlight_links( page );
 
-            await scrollPageToBottom(page);
+            await scrollOnePageDown(page);
             await page.screenshot( {
                 path: "screenshot.jpg",
                 quality: 100,
