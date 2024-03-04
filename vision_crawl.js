@@ -271,50 +271,51 @@ Please create a list of links for more info`,
     let url;
     let screenshot_taken = false;
 
-    while( true ) {
-        if( url ) {
-            console.log("Crawling " + url);
 
+ while( true ) {
+     if( url ) {
+         console.log("Crawling " + url);
 
+         await page.goto( url, {
+             waitUntil: "domcontentloaded",
+         } );
 
-            await page.goto( url, {
-                waitUntil: "domcontentloaded",
-            } );
+         await highlight_links( page );
 
-            await highlight_links( page );
+         await Promise.race( [
+             waitForEvent(page, 'load'),
+             sleep(timeout)
+         ] );
 
-            await Promise.race( [
-                waitForEvent(page, 'load'),
-                sleep(timeout)
-            ] );
+         await highlight_links( page );
 
-            await highlight_links( page );
+         await captureEntireWebsite(page, messages);
 
-            await captureEntireWebsite(page, messages);
+         screenshot_taken = true;
+         url = null;
+     }
 
-            screenshot_taken = true;
-            url = null;
-        }
+     if( screenshot_taken ) {
+         const base64_image = await image_to_base64("screenshot.jpg");
 
-        if( screenshot_taken ) {
-            const base64_image = await image_to_base64("screenshot.jpg");
+         messages.push({
+             "role": "user",
+             "content": [
+                 {
+                     "type": "image_url",
+                     "image_url": base64_image,
+                 },
+                 {
+                     "type": "text",
+                     "text": "Here's the screenshot of the website you are on right now. You can click on links with {\"click\": \"Link
+ text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond
+ normally.",
+                 }
+             ]
+         });
 
-            messages.push({
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": base64_image,
-                    },
-                    {
-                        "type": "text",
-                        "text": "Here's the screenshot of the website you are on right now. You can click on links with {\"click\": \"Link text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond normally.",
-                    }
-                ]
-            });
-
-            screenshot_taken = false;
-        }
+         screenshot_taken = false;
+     }
 
         const response = await openai.chat.completions.create({
             model: "gpt-4-vision-preview",
@@ -439,38 +440,41 @@ Please create a list of links for more info`,
         });
     }
 })();
-async function captureEntireWebsite(page, messages) {
-    let screenshotCount = 0;
-    while (screenshotCount < 5 && await scrollOnePageDown(page)) {
-        // Add a delay to give the page some time to load the new content
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const screenshotPath = `./screenshot_${format(new Date(), 'yyyyMMdd_HHmmss')}.jpg`;
-        await page.screenshot({
-            path: screenshotPath,
-            quality: 100,
-            fullPage: true
-        }).catch(error => console.error('Error saving screenshot:', error));
-        // Convert the screenshot to base64 format
-        const base64Image = await image_to_base64(screenshotPath);
-        // Send the base64 image to the chatgpt4 model
-        const response = await openai.chat.completions.create({
-            model: "gpt-4-vision-preview",
-            max_tokens: 1024,
-            messages: [
-                ...messages,
-                {
-                    "role": "system",
-                    "content": base64Image
-                }
-            ],
-        });
-        // Add the response to the messages array
-        messages.push({
-            "role": "assistant",
-            "content": response.choices[0].message.content
-        });
-        screenshotCount++;
-        // Break the loop after sending one screenshot
-        break;
-    }
-}
+
+ async function captureEntireWebsite(page, messages) {
+     let screenshotCount = 0;
+     while (screenshotCount < 5 && await scrollOnePageDown(page)) {
+         // Add a delay to give the page some time to load the new content
+         await new Promise(resolve => setTimeout(resolve, 1000));
+         const screenshotPath = `./screenshot_${format(new Date(), 'yyyyMMdd_HHmmss')}.jpg`;
+         await page.screenshot({
+             path: screenshotPath,
+             quality: 100,
+             fullPage: true
+         }).catch(error => console.error('Error saving screenshot:', error));
+         // Convert the screenshot to base64 format
+         const base64Image = await image_to_base64(screenshotPath);
+         // Send the base64 image to the chatgpt4 model
+         const response = await openai.chat.completions.create({
+             model: "gpt-4-vision-preview",
+             max_tokens: 1024,
+             messages: [
+                 ...messages,
+                 {
+                     "role": "system",
+                     "content": base64Image
+                 }
+             ],
+         });
+         // Add the response to the messages array
+         messages.push({
+             "role": "assistant",
+             "content": response.choices[0].message.content
+         });
+         screenshotCount++;
+         // Break the loop after sending one screenshot
+         break;
+     }
+ }
+
+
