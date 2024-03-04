@@ -470,5 +470,7 @@ async function captureEntireWebsite(page, messages) {
             "content": response.choices[0].message.content
         });
         screenshotCount++;
+        // Break the loop after sending one screenshot
+        break;
     }
 }
