@@ -7,6 +7,7 @@ import OpenAI from "openai";
 import { EventEmitter } from 'events';
 import WebSocket, { WebSocketServer } from 'ws';
 import { writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 
 dotenv.config()
 const openai = new OpenAI();
