@@ -439,7 +439,8 @@ Please create a list of links for more info`,
     }
 })();
 async function captureEntireWebsite(page, messages) {
-    while (await scrollOnePageDown(page)) {
+    let screenshotCount = 0;
+    while (screenshotCount < 5 && await scrollOnePageDown(page)) {
         // Add a delay to give the page some time to load the new content
         await new Promise(resolve => setTimeout(resolve, 1000));
         await page.screenshot({
@@ -453,5 +454,6 @@ async function captureEntireWebsite(page, messages) {
             max_tokens: 1024,
             messages: messages,
         });
+        screenshotCount++;
     }
 }
