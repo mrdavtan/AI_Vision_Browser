@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer-extra';
+import { format } from 'date-fns';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import readline from 'readline';
 import fs from 'fs';
@@ -92,9 +93,9 @@ async function input(text) {
   }
 }
 
-async function image_to_base64() {
+async function image_to_base64(screenshotPath) {
     return await new Promise((resolve, reject) => {
-        fs.readFile('screenshot.jpg', (err, data) => {
+        fs.readFile(screenshotPath, (err, data) => {
             if (err) {
                 console.error('Error reading the file:', err);
                 reject();
@@ -443,13 +444,14 @@ async function captureEntireWebsite(page, messages) {
     while (screenshotCount < 5 && await scrollOnePageDown(page)) {
         // Add a delay to give the page some time to load the new content
         await new Promise(resolve => setTimeout(resolve, 1000));
+        const screenshotPath = `./screenshot_${format(new Date(), 'yyyyMMdd_HHmmss')}.jpg`;
         await page.screenshot({
-            path: './screenshot.jpg',
+            path: screenshotPath,
             quality: 100,
             fullPage: true
         }).catch(error => console.error('Error saving screenshot:', error));
         // Convert the screenshot to base64 format
-        const base64Image = await image_to_base64();
+        const base64Image = await image_to_base64(screenshotPath);
         // Send the base64 image to the chatgpt4 model
         const response = await openai.chat.completions.create({
             model: "gpt-4-vision-preview",
