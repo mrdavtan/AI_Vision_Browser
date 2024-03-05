@@ -1,9 +1,13 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { EventEmitter } from 'events';
+import { WebSocketServer } from 'ws';
 import readline from 'readline';
 import fs from 'fs';
 import dotenv from 'dotenv';
+dotenv.config();
+
+puppeteer.use(StealthPlugin());
 puppeteer.use(StealthPlugin());
 puppeteer.use(StealthPlugin());
 const timeout = 8000;
