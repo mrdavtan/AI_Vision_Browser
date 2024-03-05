@@ -299,6 +299,7 @@ Please create a list of links for more info`,
 
         // Remove the duplicate declaration of message_text
 
+        const message_text = message;
         messages.push({
             "role": "assistant",
             "content": message_text,
