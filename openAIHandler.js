@@ -5,7 +5,6 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const openai = new OpenAIApi(configuration);
 
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.createChatCompletion({
@@ -19,14 +18,12 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const openai = new OpenAIApi(configuration);
 
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.createChatCompletion({
     model: "gpt-4-vision-preview",
   const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
-const openai = new OpenAIApi(configuration);
 
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.chat.completions.create({
