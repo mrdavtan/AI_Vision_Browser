@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { EventEmitter } from 'events';
 import readline from 'readline';
 import fs from 'fs';
 import dotenv from 'dotenv';
