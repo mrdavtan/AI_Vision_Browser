@@ -15,6 +15,10 @@ export function startWebSocketServer() {
 }
 
 export function sendMessageToClient(message) {
+    if (typeof message !== 'object' || typeof message.type !== 'string' || !('message' in message)) {
+        console.error('Invalid message format:', message);
+        return;
+    }
   if (currentClient) {
     currentClient.send(JSON.stringify(message));
   }
