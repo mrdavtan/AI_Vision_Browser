@@ -346,18 +346,7 @@ Please create a list of links for more info`,
              }
          });
 
-         let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
-         const timeoutPromise = new Promise((resolve) => {
-             setTimeout(() => {
-                 resolve('timeout');
-             }, delay);
-         });
-
-         const result = await Promise.race([openaiPromise, timeoutPromise]);
-         if (result === 'timeout') {
-             console.log('OpenAI API call timed out');
-             continue;
-         }
+         // This block has been moved into the captureEntireWebsite function
 
 
         // console.log( "GPT: " + message_text ); // This line has been moved inside the setTimeout function
@@ -474,7 +463,7 @@ Please create a list of links for more info`,
          // Convert the screenshot to base64 format
          const base64Image = await image_to_base64(screenshotPath);
          // Send the base64 image to the chatgpt4 model
-         const response = await openai.chat.completions.create({
+         const openaiPromise = openai.chat.completions.create({
              model: "gpt-4-vision-preview",
              max_tokens: 1024,
              messages: [
@@ -485,11 +474,27 @@ Please create a list of links for more info`,
                  }
              ],
          });
+         const timeoutPromise = new Promise((resolve) => {
+             setTimeout(() => {
+                 resolve('timeout');
+             }, delay);
+         });
+         const result = await Promise.race([openaiPromise, timeoutPromise]);
+         if (result === 'timeout') {
+             console.log('OpenAI API call timed out');
+             continue;
+         }
+         const response = await openaiPromise;
          // Add the response to the messages array
          messages.push({
              "role": "assistant",
              "content": response.choices[0].message.content
          });
+         if (screenshotCount === 0) {
+             // If it's the first screenshot, send the response and wait for the second screenshot
+             console.log("GPT: " + response.choices[0].message.content);
+             await new Promise(resolve => setTimeout(resolve, delay));
+         }
          screenshotCount++;
          // Break the loop after sending one screenshot
          break;
