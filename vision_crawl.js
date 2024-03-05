@@ -311,8 +311,8 @@ Please create a list of links for more info`,
 
         console.log( "GPT: " + message_text );
         const messageText = "GPT: " + message_text;
-        sendMessageToClient({ type: 'output', message: messageText });
-        sendMessageToClient({ type: 'complete', message: 'Ready for next input' });
+        sendMessageToClient({ message: { type: 'output', text: messageText } });
+        sendMessageToClient({ message: { type: 'complete', text: 'Ready for next input' } });
 
 
         if( typeof message_text === 'string' && message_text.indexOf('{"click": "') !== -1 ) {
