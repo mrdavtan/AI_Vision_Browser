@@ -343,13 +343,6 @@ Please create a list of links for more info`,
 
 
         // console.log( "GPT: " + message_text ); // This line has been moved inside the setTimeout function
-        const messageText = "GPT: " + message_text;
-        if (currentClient) {
-            currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
-        }
-        if (currentClient) {
-            currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
-        }
 
 
         if( message_text.indexOf('{"click": "') !== -1 ) {
