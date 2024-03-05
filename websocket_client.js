@@ -40,10 +40,17 @@ ws.on('message', (data) => {
         history.push({ role: 'server', message: response.message });
         updateHistoryToJSON(history, filename); // Save history after updating
 
-        if (response.type === 'output') {
-            console.log(`${response.message}`);
-        } else if (response.type === 'complete') {
-            sendInput();
+        // Handle the response based on its type
+        switch (response.type) {
+            case 'output':
+                console.log(`Server: ${response.message}`);
+                break;
+            case 'complete':
+                console.log('Server: Command processed. Ready for next input.');
+                sendInput();
+                break;
+            default:
+                console.log(`Server sent an unhandled message type: ${response.type}`);
         }
         // Handle other response types as needed
     } catch (error) {
