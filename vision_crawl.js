@@ -3,7 +3,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { sendMessageToClient } from './websocketServer.js';
 import { EventEmitter } from 'events';
 import { WebSocketServer } from 'ws';
-import { handleOpenAIInteraction } from './openAIHandler.js';
+import { handleOpenAIInteraction, waitForEventOrTimeout } from './utilities.js';
 import readline from 'readline';
 import fs from 'fs';
 import dotenv from 'dotenv';
