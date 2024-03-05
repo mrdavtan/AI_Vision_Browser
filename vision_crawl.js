@@ -316,7 +316,7 @@ Please create a list of links for more info`,
      }
 
          let response;
-         let message_text;
+         let message_text = '';
          setTimeout(async () => {
              response = await openai.chat.completions.create({
                  model: "gpt-4-vision-preview",
