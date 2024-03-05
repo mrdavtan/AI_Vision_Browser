@@ -317,7 +317,7 @@ Please create a list of links for more info`,
 
          let response;
          let message_text = '';
-         setTimeout(async () => {
+         const openaiPromise = new Promise(async (resolve, reject) => {
              response = await openai.chat.completions.create({
                  model: "gpt-4-vision-preview",
                  max_tokens: 1024,
@@ -339,8 +339,23 @@ Please create a list of links for more info`,
                  if (currentClient) {
                      currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
                  }
+                 resolve();
+             } else {
+                 reject('No response from OpenAI API');
              }
-         }, 60000); // Delay of 60 seconds
+         });
+
+         const timeoutPromise = new Promise((_, reject) => {
+             setTimeout(() => {
+                 reject('OpenAI API call timed out');
+             }, 60000); // Delay of 60 seconds
+         });
+
+         try {
+             await Promise.race([openaiPromise, timeoutPromise]);
+         } catch (error) {
+             console.error(error);
+         }
 
 
         // console.log( "GPT: " + message_text ); // This line has been moved inside the setTimeout function
