@@ -1,12 +1,18 @@
+import OpenAI from "openai";
 const openai = new OpenAI();
 
-import OpenAI from "openai";
 export async function handleOpenAIInteraction(messages) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-vision-preview",
+import OpenAI from "openai";
 const openai = new OpenAI();
 
-import OpenAI from "openai";
 export async function handleOpenAIInteraction(messages) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-vision-preview",
 export async function handleOpenAIInteraction(messages) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-vision-preview",
   const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
     max_tokens: 1024,
