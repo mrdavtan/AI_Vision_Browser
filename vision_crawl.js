@@ -367,10 +367,7 @@ Please create a list of links for more info`,
                     }
                 }
 
-                await Promise.race( [
-                    waitForEvent(page, 'load'),
-                    sleep(timeout)
-                ] );
+                await waitForEventOrTimeout(page, 'load', timeout);
 
                 await highlight_links( page );
 
