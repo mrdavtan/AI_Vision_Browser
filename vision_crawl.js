@@ -345,10 +345,11 @@ Please create a list of links for more info`,
              }
          });
 
+         let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
          const timeoutPromise = new Promise((_, reject) => {
              setTimeout(() => {
                  reject('OpenAI API call timed out');
-             }, 60000); // Delay of 60 seconds
+             }, delay);
          });
 
          try {
@@ -460,6 +461,7 @@ Please create a list of links for more info`,
 
  async function captureEntireWebsite(page, messages) {
      let screenshotCount = 0;
+     let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
      while (screenshotCount < 5 && await scrollOnePageDown(page)) {
          // Add a delay to give the page some time to load the new content
          await new Promise(resolve => setTimeout(resolve, 1000));
