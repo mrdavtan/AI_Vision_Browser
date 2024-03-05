@@ -36,21 +36,21 @@ ws.on('open', () => {
 ws.on('message', (data) => {
     try {
         const response = JSON.parse(data);
-        // Append received message to history
-        history.push({ role: 'server', message: response.message });
+        // Append received message to history, ensuring that we store the text part of the message
+        history.push({ role: 'server', message: response.message.text });
         updateHistoryToJSON(history, filename); // Save history after updating
 
         // Handle the response based on its type
-        switch (response.type) {
+        switch (response.message.type) {
             case 'output':
-                console.log(`Server: ${response.message}`);
+                console.log(`Server: ${response.message.text}`);
                 break;
             case 'complete':
-                console.log('Server: Command processed. Ready for next input.');
+                console.log('Server: ${response.message.text}');
                 sendInput();
                 break;
             default:
-                console.log(`Server sent an unhandled message type: ${response.type}`);
+                console.log(`Server sent an unhandled message type: ${response.message.type}`);
         }
         // Handle other response types as needed
     } catch (error) {
