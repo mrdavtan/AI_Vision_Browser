@@ -315,26 +315,31 @@ Please create a list of links for more info`,
          screenshot_taken = false;
      }
 
-        let response;
-        let message_text;
-        setTimeout(async () => {
-            response = await openai.chat.completions.create({
-                model: "gpt-4-vision-preview",
-                max_tokens: 1024,
-                //seed: 665234,
-                messages: messages,
-            });
-            if (response) {
-                const message = response.choices[0].message;
-                message_text = message.content;
-                messages.push({
-                    "role": "assistant",
-                    "content": message_text,
-                });
-                console.log( "GPT: " + message_text );
-            }
-        }, 60000); // Delay of 60 seconds
-
+         let response;
+         setTimeout(async () => {
+             response = await openai.chat.completions.create({
+                 model: "gpt-4-vision-preview",
+                 max_tokens: 1024,
+                 //seed: 665234,
+                 messages: messages,
+             });
+             if (response) {
+                 const message = response.choices[0].message;
+                 const message_text = message.content;
+                 messages.push({
+                     "role": "assistant",
+                     "content": message_text,
+                 });
+                 console.log( "GPT: " + message_text );
+                 const messageText = "GPT: " + message_text;
+                 if (currentClient) {
+                     currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
+                 }
+                 if (currentClient) {
+                     currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
+                 }
+             }
+         }, 60000); // Delay of 60 seconds
 
 
         // console.log( "GPT: " + message_text ); // This line has been moved inside the setTimeout function
