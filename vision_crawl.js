@@ -300,7 +300,7 @@ Please create a list of links for more info`,
 
         // Remove the duplicate declaration of message_text
 
-        const message_text = message;
+        const message_text = message.content;
         messages.push({
             "role": "assistant",
             "content": message_text,
@@ -314,7 +314,7 @@ Please create a list of links for more info`,
         sendMessageToClient({ type: 'complete', message: 'Ready for next input' });
 
 
-        if( message_text.indexOf('{"click": "') !== -1 ) {
+        if( typeof message_text === 'string' && message_text.indexOf('{"click": "') !== -1 ) {
             let parts = message_text.split('{"click": "');
             parts = parts[1].split('"}');
             const link_text = parts[0].replace(/[^a-zA-Z0-9 ]/g, '');
