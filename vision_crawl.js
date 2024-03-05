@@ -79,10 +79,10 @@ async function input(text) {
     if (thePrompt) {
       // Send the response to the client
       if (currentClient) {
-        currentClient.send(JSON.stringify({ type: 'output', message: thePrompt }));
+        sendMessageToClient({ type: 'output', message: thePrompt });
 
         // Send a 'complete' message to indicate the client can send the next input
-        currentClient.send(JSON.stringify({ type: 'complete', message: 'Command processed. Ready for next input.' }));
+        sendMessageToClient({ type: 'complete', message: 'Command processed. Ready for next input.' });
       }
 
       // Remove WebSocket listener to prevent it from firing multiple times
