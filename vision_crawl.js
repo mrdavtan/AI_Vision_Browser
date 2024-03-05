@@ -315,8 +315,9 @@ Please create a list of links for more info`,
          screenshot_taken = false;
      }
 
+        let response;
         setTimeout(async () => {
-            const response = await openai.chat.completions.create({
+            response = await openai.chat.completions.create({
                 model: "gpt-4-vision-preview",
                 max_tokens: 1024,
                 //seed: 665234,
@@ -324,8 +325,10 @@ Please create a list of links for more info`,
             });
         }, 60000); // Delay of 60 seconds
 
-        const message = response.choices[0].message;
-        const message_text = message.content;
+        if (response) {
+            const message = response.choices[0].message;
+            const message_text = message.content;
+        }
 
         messages.push({
             "role": "assistant",
