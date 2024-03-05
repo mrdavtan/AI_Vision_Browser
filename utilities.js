@@ -20,3 +20,9 @@ export async function highlight_links(page) {
 export async function waitForEvent(page, event) {
   // ... (wait for event logic)
 }
+export async function waitForEventOrTimeout(page, event, timeout) {
+  return Promise.race([
+    waitForEvent(page, event),
+    sleep(timeout)
+  ]);
+}

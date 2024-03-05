@@ -1,29 +1,6 @@
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-
-export async function handleOpenAIInteraction(messages) {
-  const response = await openai.createChatCompletion({
-    model: "gpt-4-vision-preview",
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-vision-preview",
-import { Configuration, OpenAIApi } from "openai";
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-
-export async function handleOpenAIInteraction(messages) {
-  const response = await openai.createChatCompletion({
-    model: "gpt-4-vision-preview",
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-vision-preview",
+const openai = new OpenAI();
 
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.chat.completions.create({
@@ -33,7 +10,6 @@ export async function handleOpenAIInteraction(messages) {
     messages: messages,
   });
 
-  const message = response.choices[0].message;
-  const message_text = message.content;
+  const message_text = response.choices[0].message;
   return message_text;
 }
