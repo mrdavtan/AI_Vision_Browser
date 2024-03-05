@@ -296,8 +296,7 @@ Please create a list of links for more info`,
 
         const message = await handleOpenAIInteraction(messages);
 
-        const message_text = message.content;
-        const message_text = message.content;
+        // Remove the duplicate declaration of message_text
 
         messages.push({
             "role": "assistant",
