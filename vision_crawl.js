@@ -347,16 +347,16 @@ Please create a list of links for more info`,
          });
 
          let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
-         const timeoutPromise = new Promise((_, reject) => {
+         const timeoutPromise = new Promise((resolve) => {
              setTimeout(() => {
-                 reject('OpenAI API call timed out');
+                 resolve('timeout');
              }, delay);
          });
 
-         try {
-             await Promise.race([openaiPromise, timeoutPromise]);
-         } catch (error) {
-             console.error(error);
+         const result = await Promise.race([openaiPromise, timeoutPromise]);
+         if (result === 'timeout') {
+             console.log('OpenAI API call timed out');
+             continue;
          }
 
 
