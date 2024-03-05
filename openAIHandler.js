@@ -23,11 +23,7 @@ export async function handleOpenAIInteraction(messages) {
   const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
 export async function handleOpenAIInteraction(messages) {
-  const response = await openai.createChatCompletion({
-    model: "gpt-4-vision-preview",
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-vision-preview",
-  const response = await openai.chat.completions.create({
+  const response = await openai.createCompletion({
     model: "gpt-4-vision-preview",
     max_tokens: 1024,
     //seed: 665234,
