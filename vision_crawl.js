@@ -3,12 +3,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import readline from 'readline';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { handleOpenAIInteraction } from './openAIHandler.js';
-import { EventEmitter } from 'events';
-import WebSocket, { WebSocketServer } from 'ws';
-
-dotenv.config()
-const openai = new OpenAI();
+puppeteer.use(StealthPlugin());
 puppeteer.use(StealthPlugin());
 const timeout = 8000;
 
