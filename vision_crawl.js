@@ -211,6 +211,7 @@ async function waitForEvent(page, event) {
     }, event)
 }
 
+let screenshotCount = 0;
 (async () => {
     console.log( "https://github.com/unconv/gpt4v-browsing" );
     console.log( "git@github.com:mrdavtan/vision_crawl.git\n" );
@@ -460,7 +461,6 @@ Please create a list of links for more info`,
 })();
 
  async function captureEntireWebsite(page, messages) {
-     let screenshotCount = 0;
      let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
      while (screenshotCount < 5 && await scrollOnePageDown(page)) {
          // Add a delay to give the page some time to load the new content
