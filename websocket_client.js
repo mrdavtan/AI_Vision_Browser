@@ -46,7 +46,7 @@ ws.on('message', (data) => {
                 console.log(`Server: ${response.message}`);
                 break;
             case 'complete':
-                console.log('Server: ${response.message.text}');
+                console.log(`Server: ${response.message}`);
                 console.log(`Server: ${response.message}`);
                 sendInput();
                 break;
