@@ -377,7 +377,7 @@ Please create a list of links for more info`,
                 screenshot_taken = true;
 
             } catch( error ) {
-                console.log( "ERROR: Clicking failed" );
+                sendMessageToClient({ type: 'output', message: "ERROR: Clicking failed" });
 
                 messages.push({
                     "role": "user",
