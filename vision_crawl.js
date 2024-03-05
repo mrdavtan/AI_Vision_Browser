@@ -11,8 +11,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 puppeteer.use(StealthPlugin());
-puppeteer.use(StealthPlugin());
-puppeteer.use(StealthPlugin());
 const timeout = 8000;
 
 
@@ -312,14 +310,11 @@ Please create a list of links for more info`,
         console.log( "GPT: " + message_text );
         const messageText = "GPT: " + message_text;
         sendMessageToClient({ message: { type: 'output', text: messageText } });
-        sendMessageToClient({ message: { type: 'complete', text: 'Ready for next input' } });
-
 
         if( typeof message_text === 'string' && message_text.indexOf('{"click": "') !== -1 ) {
             let parts = message_text.split('{"click": "');
             parts = parts[1].split('"}');
             const link_text = parts[0].replace(/[^a-zA-Z0-9 ]/g, '');
-            console.log("Unsanitized target: " + link_text)
             try {
                 const elements = await page.$$('[gpt-link-text]');
                 if (elements.length === 0) {
