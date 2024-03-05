@@ -238,7 +238,7 @@ Please create a list of links for more info`,
         }
     ];
 
-    console.log("GPT: How can I assist you today?")
+    sendMessageToClient({ type: 'output', message: "GPT: How can I assist you today?" });
     const prompt = await input("You: ");
     console.log();
 
