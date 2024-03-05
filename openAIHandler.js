@@ -1,11 +1,11 @@
-import OpenAI from "openai";
-
 const openai = new OpenAI();
 
 import OpenAI from "openai";
-
+export async function handleOpenAIInteraction(messages) {
 const openai = new OpenAI();
 
+import OpenAI from "openai";
+export async function handleOpenAIInteraction(messages) {
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
