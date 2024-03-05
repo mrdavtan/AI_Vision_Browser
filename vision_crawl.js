@@ -261,10 +261,7 @@ Please create a list of links for more info`,
 
             await highlight_links( page );
 
-            await Promise.race( [
-                waitForEvent(page, 'load'),
-                sleep(timeout)
-            ] );
+            await waitForEventOrTimeout(page, 'load', timeout);
 
             await highlight_links( page );
 
@@ -297,14 +294,9 @@ Please create a list of links for more info`,
             screenshot_taken = false;
         }
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4-vision-preview",
-            max_tokens: 1024,
-            //seed: 665234,
-            messages: messages,
-        });
+        const message = await handleOpenAIInteraction(messages);
 
-        const message = response.choices[0].message;
+        const message_text = message.content;
         const message_text = message.content;
 
         messages.push({
@@ -316,12 +308,8 @@ Please create a list of links for more info`,
 
         console.log( "GPT: " + message_text );
         const messageText = "GPT: " + message_text;
-        if (currentClient) {
-            currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
-        }
-        if (currentClient) {
-            currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
-        }
+        sendMessageToClient({ type: 'output', message: messageText });
+        sendMessageToClient({ type: 'complete', message: 'Ready for next input' });
 
 
         if( message_text.indexOf('{"click": "') !== -1 ) {
@@ -369,7 +357,7 @@ Please create a list of links for more info`,
                             console.log("Match found. Attempting to click...");
                             // Continue with the click logic here
                             const box = await element.boundingBox();
-                            await page.waitForTimeout(1000);
+                            await sleep(1000);
                             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
                             await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
                             //break;
@@ -420,4 +408,3 @@ Please create a list of links for more info`,
         });
     }
 })();
-
