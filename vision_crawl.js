@@ -1,5 +1,4 @@
 import puppeteer from 'puppeteer-extra';
-import { format } from 'date-fns';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import readline from 'readline';
 import fs from 'fs';
@@ -7,7 +6,6 @@ import dotenv from 'dotenv';
 import OpenAI from "openai";
 import { EventEmitter } from 'events';
 import WebSocket, { WebSocketServer } from 'ws';
-import { writeFile } from 'fs/promises';
 
 dotenv.config()
 const openai = new OpenAI();
@@ -93,9 +91,9 @@ async function input(text) {
   }
 }
 
-async function image_to_base64(screenshotPath) {
+async function image_to_base64(image_file) {
     return await new Promise((resolve, reject) => {
-        fs.readFile(screenshotPath, (err, data) => {
+        fs.readFile(image_file, (err, data) => {
             if (err) {
                 console.error('Error reading the file:', err);
                 reject();
@@ -115,26 +113,6 @@ async function sleep( milliseconds ) {
             r();
         }, milliseconds );
     });
-}
-
-async function hasScrollableContent(page) {
-    return await page.evaluate(() => {
-        return document.documentElement.scrollHeight > window.innerHeight;
-    });
-}
-
-async function scrollOnePageDown(page) {
-    if (await hasScrollableContent(page)) {
-        await page.evaluate(async () => {
-            await new Promise((resolve, reject) => {
-                var viewportHeight = window.innerHeight;
-                window.scrollBy(0, viewportHeight);
-                resolve();
-            });
-        });
-        return true;
-    }
-    return false;
 }
 
 async function highlight_links( page ) {
@@ -211,7 +189,6 @@ async function waitForEvent(page, event) {
     }, event)
 }
 
-let screenshotCount = 0;
 (async () => {
     console.log( "https://github.com/unconv/gpt4v-browsing" );
     console.log( "git@github.com:mrdavtan/vision_crawl.git\n" );
@@ -233,7 +210,7 @@ let screenshotCount = 0;
 
 
       // Navigate to a URL
-      await page.goto('https://news.google.com/search?q=AI&hl=en-US&gl=US&ceid=US:en');
+      await page.goto('https://duckduckgo.com');
 
     await page.setViewport( {
         width: 1200,
@@ -272,84 +249,79 @@ Please create a list of links for more info`,
     let url;
     let screenshot_taken = false;
 
-
- while( true ) {
-     if( url ) {
-         console.log("Crawling " + url);
-
-         await page.goto( url, {
-             waitUntil: "domcontentloaded",
-         } );
-
-         await highlight_links( page );
-
-         await Promise.race( [
-             waitForEvent(page, 'load'),
-             sleep(timeout)
-         ] );
-
-         await highlight_links( page );
-
-         await captureEntireWebsite(page, messages);
-
-         screenshot_taken = true;
-         url = null;
-     }
-
-     if( screenshot_taken ) {
-         const base64_image = await image_to_base64("screenshot.jpg");
-
-         messages.push({
-             "role": "user",
-             "content": [
-                 {
-                     "type": "image_url",
-                     "image_url": base64_image,
-                 },
-                 {
-                     "type": "text",
-                     "text": "Here's the screenshot of the website you are on right now. You can click on links with {\"click\": \"Link\text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond normally.\","
-                 }
-             ]
-         });
-
-         screenshot_taken = false;
-     }
-
-         let response;
-         let message_text = '';
-         const openaiPromise = new Promise(async (resolve, reject) => {
-             response = await openai.chat.completions.create({
-                 model: "gpt-4-vision-preview",
-                 max_tokens: 1024,
-                 //seed: 665234,
-                 messages: messages,
-             });
-             if (response) {
-                 const message = response.choices[0].message;
-                 message_text = message.content;
-                 messages.push({
-                     "role": "assistant",
-                     "content": message_text,
-                 });
-                 console.log( "GPT: " + message_text );
-                 const messageText = "GPT: " + message_text;
-                 if (currentClient) {
-                     currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
-                 }
-                 if (currentClient) {
-                     currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
-                 }
-                 resolve();
-             } else {
-                 reject('No response from OpenAI API');
-             }
-         });
-
-         // This block has been moved into the captureEntireWebsite function
+    while( true ) {
+        if( url ) {
+            console.log("Crawling " + url);
 
 
-        // console.log( "GPT: " + message_text ); // This line has been moved inside the setTimeout function
+
+            await page.goto( url, {
+                waitUntil: "domcontentloaded",
+            } );
+
+            await highlight_links( page );
+
+            await Promise.race( [
+                waitForEvent(page, 'load'),
+                sleep(timeout)
+            ] );
+
+            await highlight_links( page );
+
+            await page.screenshot( {
+                path: "screenshot.jpg",
+                quality: 100,
+            } );
+
+            screenshot_taken = true;
+            url = null;
+        }
+
+        if( screenshot_taken ) {
+            const base64_image = await image_to_base64("screenshot.jpg");
+
+            messages.push({
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": base64_image,
+                    },
+                    {
+                        "type": "text",
+                        "text": "Here's the screenshot of the website you are on right now. You can click on links with {\"click\": \"Link text\"} or you can crawl to another URL if this one is incorrect. If you find the answer to the user's question, you can respond normally.",
+                    }
+                ]
+            });
+
+            screenshot_taken = false;
+        }
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4-vision-preview",
+            max_tokens: 1024,
+            //seed: 665234,
+            messages: messages,
+        });
+
+        const message = response.choices[0].message;
+        const message_text = message.content;
+
+        messages.push({
+            "role": "assistant",
+            "content": message_text,
+        });
+
+
+
+        console.log( "GPT: " + message_text );
+        const messageText = "GPT: " + message_text;
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'output', message: messageText }));
+        }
+        if (currentClient) {
+            currentClient.send(JSON.stringify({ type: 'complete', message: 'Ready for next input' }));
+        }
 
 
         if( message_text.indexOf('{"click": "') !== -1 ) {
@@ -448,57 +420,4 @@ Please create a list of links for more info`,
         });
     }
 })();
-
- async function captureEntireWebsite(page, messages) {
-     let delay = screenshotCount === 0 ? 0 : 60000; // No delay for the first screenshot, 60 seconds for the second
-     while (screenshotCount < 5 && await scrollOnePageDown(page)) {
-         // Add a delay to give the page some time to load the new content
-         await new Promise(resolve => setTimeout(resolve, 1000));
-         const screenshotPath = `./screenshot_${format(new Date(), 'yyyyMMdd_HHmmss')}.jpg`;
-         await page.screenshot({
-             path: screenshotPath,
-             quality: 100,
-             fullPage: true
-         }).catch(error => console.error('Error saving screenshot:', error));
-         // Convert the screenshot to base64 format
-         const base64Image = await image_to_base64(screenshotPath);
-         // Send the base64 image to the chatgpt4 model
-         const openaiPromise = openai.chat.completions.create({
-             model: "gpt-4-vision-preview",
-             max_tokens: 1024,
-             messages: [
-                 ...messages,
-                 {
-                     "role": "system",
-                     "content": base64Image
-                 }
-             ],
-         });
-         const timeoutPromise = new Promise((resolve) => {
-             setTimeout(() => {
-                 resolve('timeout');
-             }, delay);
-         });
-         const result = await Promise.race([openaiPromise, timeoutPromise]);
-         if (result === 'timeout') {
-             console.log('OpenAI API call timed out');
-             continue;
-         }
-         const response = await openaiPromise;
-         // Add the response to the messages array
-         messages.push({
-             "role": "assistant",
-             "content": response.choices[0].message.content
-         });
-         if (screenshotCount === 0) {
-             // If it's the first screenshot, send the response and wait for the second screenshot
-             console.log("GPT: " + response.choices[0].message.content);
-             await new Promise(resolve => setTimeout(resolve, delay));
-         }
-         screenshotCount++;
-         // Break the loop after sending one screenshot
-         break;
-     }
- }
-
 

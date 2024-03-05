@@ -1,0 +1,22 @@
+[
+    {
+        "role": "client",
+        "message": "What are the top news in Tech today?"
+    },
+    {
+        "role": "server",
+        "message": "What are the top news in Tech today?"
+    },
+    {
+        "role": "server",
+        "message": "Command processed. Ready for next input."
+    },
+    {
+        "role": "server",
+        "message": "GPT: {\"url\": \"https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNREpmYzNRU0JXVnVMVWRDS0FBUAE\"}"
+    },
+    {
+        "role": "server",
+        "message": "Ready for next input"
+    }
+]

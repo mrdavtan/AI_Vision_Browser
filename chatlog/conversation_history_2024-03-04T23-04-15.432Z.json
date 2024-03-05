@@ -1,0 +1,22 @@
+[
+    {
+        "role": "client",
+        "message": "What are the top headlines in AI news today?"
+    },
+    {
+        "role": "server",
+        "message": "What are the top headlines in AI news today?"
+    },
+    {
+        "role": "server",
+        "message": "Command processed. Ready for next input."
+    },
+    {
+        "role": "server",
+        "message": "GPT: {\"url\": \"https://news.google.com/search?q=AI\"}"
+    },
+    {
+        "role": "server",
+        "message": "Ready for next input"
+    }
+]
