@@ -5,6 +5,8 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const openai = new OpenAIApi(configuration);
+
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.createChatCompletion({
     model: "gpt-4-vision-preview",
@@ -17,18 +19,24 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const openai = new OpenAIApi(configuration);
+
 export async function handleOpenAIInteraction(messages) {
   const response = await openai.createChatCompletion({
     model: "gpt-4-vision-preview",
   const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
+const openai = new OpenAIApi(configuration);
+
 export async function handleOpenAIInteraction(messages) {
-  const response = await openai.createCompletion({
+  const response = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
     max_tokens: 1024,
     //seed: 665234,
     messages: messages,
   });
 
-  return response.choices[0].message;
+  const message = response.choices[0].message;
+  const message_text = message.content;
+  return message_text;
 }
