@@ -316,7 +316,6 @@ Please create a list of links for more info`,
      }
 
         let response;
-        let message_text;
         setTimeout(async () => {
             response = await openai.chat.completions.create({
                 model: "gpt-4-vision-preview",
@@ -326,14 +325,13 @@ Please create a list of links for more info`,
             });
             if (response) {
                 const message = response.choices[0].message;
-                message_text = message.content;
+                const message_text = message.content;
+                messages.push({
+                    "role": "assistant",
+                    "content": message_text,
+                });
             }
         }, 60000); // Delay of 60 seconds
-
-        messages.push({
-            "role": "assistant",
-            "content": message_text,
-        });
 
 
 
