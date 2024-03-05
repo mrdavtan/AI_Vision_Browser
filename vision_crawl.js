@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { sendMessageToClient } from './websocketServer.js';
 import { EventEmitter } from 'events';
 import { WebSocketServer } from 'ws';
 import { handleOpenAIInteraction } from './openAIHandler.js';
