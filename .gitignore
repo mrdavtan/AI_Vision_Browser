@@ -1,3 +1,5 @@
 node_modules/
 screenshot.jpg
 .env
+.aider*
+chatlog/
