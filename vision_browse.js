@@ -107,27 +107,6 @@ async function image_to_base64(image_file) {
     });
 }
 
-//async function input( text ) {
-//    let the_prompt;
-//
-//    const rl = readline.createInterface({
-//      input: process.stdin,
-//      output: process.stdout
-//    });
-//
-//    await (async () => {
-//        return new Promise( resolve => {
-//            rl.question( text, (prompt) => {
-//                the_prompt = prompt;
-//                rl.close();
-//                resolve();
-//            } );
-//        } );
-//    })();
-//
-//    return the_prompt;
-//}
-
 async function sleep( milliseconds ) {
     return await new Promise((r, _) => {
         setTimeout( () => {
@@ -175,7 +154,6 @@ async function highlight_links( page ) {
                 if (!isStyleVisible(el)) {
                     return false;
                 }
-
                 // Traverse up the DOM and check if any ancestor element is hidden
                 let parent = el;
                 while (parent) {
@@ -212,10 +190,8 @@ async function waitForEvent(page, event) {
 }
 
 (async () => {
-    console.log( "###########################################" );
-    console.log( "# Forked from Unconventional Coding       #" );
-    console.log( "#   websockets & browse fix by AISORTED   #" );
-    console.log( "###########################################\n" );
+    console.log( "https://github.com/unconv/gpt4v-browsing" );
+    console.log( "git@github.com:mrdavtan/vision_crawl.git\n" );
 
     const browser = await puppeteer.launch( {
         headless: false,
