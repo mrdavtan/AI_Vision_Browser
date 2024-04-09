@@ -1,5 +1,4 @@
-node_modules/
+nde_modules/
 screenshot.jpg
 .env
 .aider*
-chatlog/
